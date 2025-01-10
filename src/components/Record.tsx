@@ -13,7 +13,12 @@ import Voice, {
   SpeechResultsEvent,
   SpeechErrorEvent,
 } from "@react-native-voice/voice";
-import { Easing } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  FadeInDown,
+  FadeOutDown,
+} from "react-native-reanimated";
+import { BLUE_10, PRIMARY_COLOR } from "../Constants";
 type Props = {
   onSpeechStart: () => void;
   onSpeechEnd: (result: any[]) => void;
@@ -145,7 +150,11 @@ class Record extends Component<Props, State> {
   };
   render() {
     return (
-      <View style={styles.container}>
+      <Animated.View
+        style={styles.container}
+        entering={FadeInDown}
+        exiting={FadeOutDown}
+      >
         {this.state.started ? (
           <TouchableHighlight onPress={this._stopRecognizing}>
             <View
@@ -153,7 +162,7 @@ class Record extends Component<Props, State> {
                 width: 75,
                 height: 75,
                 borderRadius: 75,
-                backgroundColor: "#6E01EF",
+                backgroundColor: BLUE_10,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -174,12 +183,16 @@ class Record extends Component<Props, State> {
                     key={index}
                     style={[
                       StyleSheet.absoluteFillObject,
-                      { backgroundColor: "#6E01EF", borderRadius: 75 },
+                      { backgroundColor: BLUE_10, borderRadius: 75 },
                     ]}
                   />
                 );
               })}
-              <FontAwesome name="microphone-slash" size={24} color="#fff" />
+              <FontAwesome
+                name="microphone-slash"
+                size={24}
+                color={PRIMARY_COLOR}
+              />
             </View>
           </TouchableHighlight>
         ) : (
@@ -189,16 +202,16 @@ class Record extends Component<Props, State> {
                 width: 75,
                 height: 75,
                 borderRadius: 75,
-                backgroundColor: "#6E01EF",
+                backgroundColor: BLUE_10,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <FontAwesome name="microphone" size={24} color="#fff" />
+              <FontAwesome name="microphone" size={24} color={PRIMARY_COLOR} />
             </View>
           </TouchableHighlight>
         )}
-      </View>
+      </Animated.View>
     );
   }
 }
@@ -207,7 +220,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
   },
-  container: {},
+  container: {
+    marginBottom: 70,
+  },
   welcome: {
     fontSize: 20,
     textAlign: "center",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -21,10 +21,39 @@ import Animated, {
   FadeOut,
   FadeOutDown,
 } from "react-native-reanimated";
+import LottieOrb from "./LottieOrb";
+import LottieView from "lottie-react-native";
+import { ConversationDataContext } from "@/conversationData.context";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  BLUE_10,
+  PRIMARY_COLOR,
+  SECONDARY_COLOR,
+  THIRD_COLOR,
+} from "../Constants";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function Home() {
+  const { conversationData, setConversationData } = useContext(
+    ConversationDataContext
+  );
   const [speechText, setSpeechText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [playBackOn, setPlayBackOn] = useState(false);
+  const [sound, setSound] = useState<any>(null);
+  const animationRef = useRef<LottieView>(null);
+
+  useEffect(() => {
+    setPlayBackOn(true);
+    handleSpeechEnd("Hello", conversationData?.conversation_id);
+
+    // Cleanup function to unload sound when component unmounts
+    // return () => {
+    //   if (sound) {
+    //     sound.unloadAsync();
+    //   }
+    // };
+  }, [conversationData]);
 
   const loadAudio = async (base64AudioData: any) => {
     try {
@@ -36,7 +65,7 @@ export default function Home() {
         onPlaybackStatusUpdate
       );
 
-      console.log("FETCH_CONVO_SUCCESS_2 ", audioSound);
+      setSound(audioSound);
       await playSound(audioSound);
     } catch (err) {
       console.error("Error loading audio:", err);
@@ -44,14 +73,8 @@ export default function Home() {
   };
 
   const onPlaybackStatusUpdate = (status: any) => {
-    console.log("PLAYBACK_STATUS ", status);
     if (status.didJustFinish) {
-      setLoading(false);
-      // Audio has finished playing
-      // setIsPlaying(false);
-      // if (onPlaybackComplete) {
-      //   onPlaybackComplete();
-      // }
+      setPlayBackOn(false);
     }
   };
 
@@ -65,6 +88,8 @@ export default function Home() {
         if (status.isPlaying) {
           await resAudio.pauseAsync();
         } else {
+          setLoading(false);
+          setPlayBackOn(true);
           await resAudio.playAsync();
         }
       }
@@ -87,10 +112,16 @@ export default function Home() {
     }
   };
 
-  const handleSpeechEnd = async (humanPrompt: string) => {
+  const handleSpeechEnd = async (
+    humanPrompt: string,
+    conversationId: string
+  ) => {
     try {
       setLoading(true);
-      const responseData = await fetchConversationAudio({ humanPrompt });
+      const responseData = await fetchConversationAudio({
+        humanPrompt,
+        conversationId,
+      });
       await processResponseData(responseData);
     } catch (err) {
       setLoading(false);
@@ -99,62 +130,40 @@ export default function Home() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Speech Text</Text>
-        <TextInput
-          multiline
-          style={styles.textInput}
-          numberOfLines={6}
-          value={speechText}
-          maxLength={500}
-          editable={true}
-        />
-        <View
-          style={{
-            alignItems: "flex-end",
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
+        <Pressable
+          style={styles.label}
+          onPress={async () => {
+            await sound.pauseAsync();
+            setSpeechText("");
+            setConversationData({});
+            clearConversationId({
+              conversationId: conversationData?.conversation_id,
+            });
           }}
         >
-          <Button
-            title="Save"
-            color={"#007AFF"}
-            onPress={async () => {
-              console.log("save");
-            }}
-          />
-          <Button
-            title="Clear"
-            color={"#007AFF"}
-            onPress={() => {
-              setSpeechText("");
-              clearConversationId({});
-            }}
-          />
-        </View>
+          {/* <View style={styles.label}> */}
+          <FontAwesome name="plus" size={24} color={BLUE_10} />
+          {/* </View> */}
+        </Pressable>
       </View>
       <View style={styles.voiceContainer}>
-        {loading ? (
-          <Animated.View entering={FadeIn} exiting={FadeOut}>
-            <Text>Loading...</Text>
-          </Animated.View>
+        {playBackOn ? (
+          <LottieOrb animationRef={animationRef} />
         ) : (
-          <Animated.View entering={FadeInDown} exiting={FadeOutDown}>
-            <Record
-              onSpeechEnd={(value) => {
-                handleSpeechEnd(value[0]);
-                setSpeechText(value[0]);
-              }}
-              onSpeechStart={() => {
-                setSpeechText("");
-              }}
-            />
-          </Animated.View>
+          <Record
+            onSpeechEnd={(value) => {
+              handleSpeechEnd(value[0], conversationData?.conversation_id);
+              setSpeechText(value[0]);
+            }}
+            onSpeechStart={() => {
+              setSpeechText("");
+            }}
+          />
         )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
@@ -164,20 +173,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    backgroundColor: "#F5FCFF",
+    backgroundColor: PRIMARY_COLOR,
   },
   label: {
-    fontWeight: "bold",
-    fontSize: 15,
     paddingTop: 10,
     paddingBottom: 10,
+    marginRight: 10,
+    alignSelf: "flex-end",
   },
   inputContainer: {
-    height: "50%",
     width: "100%",
-    flex: 1,
     padding: 10,
-    justifyContent: "center",
   },
   textInput: {
     padding: 10,
@@ -190,9 +196,12 @@ const styles = StyleSheet.create({
     right: 0,
   },
   voiceContainer: {
-    height: "50%",
+    flex: 1,
     width: "100%",
+    justifyContent: "flex-end",
     alignItems: "center",
-    justifyContent: "space-around",
+    borderTopWidth: 1,
+    borderTopColor: "#0b3131",
+    paddingBottom: 100,
   },
 });

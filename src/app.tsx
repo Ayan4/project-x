@@ -1,32 +1,45 @@
 import { StatusBar } from "expo-status-bar";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import Home from "./components/Home";
 import Notes from "./components/Notes";
+import UploadResumeScreen from "./screens/UploadResumeScreen";
+import { useContext } from "react";
+import ConversationDataProvider, {
+  ConversationDataContext,
+} from "@/conversationData.context";
+import { createStackNavigator } from "@react-navigation/stack";
 
-const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 export default function App() {
   return (
+    <ConversationDataProvider>
+      <RootNavigation />
+    </ConversationDataProvider>
+  );
+}
+
+function RootNavigation() {
+  const { conversationData } = useContext(ConversationDataContext);
+  return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: () => {
-            let iconName = "record";
-            if (route.name === "Record") {
-              iconName = "record-vinyl";
-            } else if (route.name === "History") {
-              iconName = "history";
-            }
-            return <FontAwesome5 name={iconName} size={24} color="black" />;
-          },
-        })}
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          gestureDirection: "horizontal",
+        }}
       >
-        <Tab.Screen name="Record" component={Home} />
-        <Tab.Screen name="History" component={Notes} />
-      </Tab.Navigator>
+        {conversationData?.conversation_id ? (
+          <Stack.Screen name="Home" component={Home} />
+        ) : (
+          <Stack.Screen
+            name="UploadResumeScreen"
+            component={UploadResumeScreen}
+          />
+        )}
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

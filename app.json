@@ -51,7 +51,8 @@
         }
       ],
       "expo-audio",
-      "expo-av"
+      "expo-av",
+      "expo-document-picker"
     ],
     "experiments": {
       "typedRoutes": true

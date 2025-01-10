@@ -1,6 +1,6 @@
 import RNFS from "react-native-fs";
 
-const BASE_URL = "http://20.204.170.132:8057/";
+export const BASE_URL = "http://20.204.170.132:8057/";
 
 type fetchConversationAudioType = {
   conversationId?: string;
@@ -15,7 +15,7 @@ export const fetchConversationAudio = async ({
   conversationId,
   humanPrompt,
 }: fetchConversationAudioType) => {
-  const endpoint = `${BASE_URL}conversations/e8730de7-1b60-4a64-9871-2092c7516019/messages`;
+  const endpoint = `${BASE_URL}conversations/${conversationId}/messages`;
   const transcription = humanPrompt || "Hello";
   try {
     console.log("FETCH_CONVO ", endpoint);
@@ -38,7 +38,7 @@ export const clearConversationId = async ({
   conversationId,
 }: clearConversationIdType) => {
   try {
-    const endpoint = `${BASE_URL}conversations/e8730de7-1b60-4a64-9871-2092c7516019`;
+    const endpoint = `${BASE_URL}conversations/${conversationId}`;
     const response = await fetch(endpoint, {
       method: "DELETE",
       headers: {
@@ -46,7 +46,7 @@ export const clearConversationId = async ({
       },
     });
     const result = await response.json();
-    console.log("conversation_delated ", result);
+    console.log("conversation_deleted ", result);
     return result;
   } catch (err) {
     console.error("Error clearing conversation ID: ", err);
