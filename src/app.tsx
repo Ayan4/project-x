@@ -31,11 +31,10 @@ function RootNavigation() {
         {conversationData?.conversation_id ? (
           <Stack.Screen name="Home" component={Home} />
         ) : (
-          <Stack.Screen name="Home" component={Home} />
-          // <Stack.Screen
-          //   name="UploadResumeScreen"
-          //   component={UploadResumeScreen}
-          // />
+          <Stack.Screen
+            name="UploadResumeScreen"
+            component={UploadResumeScreen}
+          />
         )}
       </Stack.Navigator>
     </NavigationContainer>
