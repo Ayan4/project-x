@@ -1,15 +1,12 @@
-import { StatusBar } from "expo-status-bar";
-import { FontAwesome5 } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import Home from "./components/Home";
-import Notes from "./components/Notes";
-import UploadResumeScreen from "./screens/UploadResumeScreen";
 import { useContext } from "react";
 import ConversationDataProvider, {
   ConversationDataContext,
 } from "@/conversationData.context";
 import { createStackNavigator } from "@react-navigation/stack";
+import UploadResumeScreen from "./screens/UploadResumeScreen";
 
 const Stack = createStackNavigator();
 
@@ -34,10 +31,11 @@ function RootNavigation() {
         {conversationData?.conversation_id ? (
           <Stack.Screen name="Home" component={Home} />
         ) : (
-          <Stack.Screen
-            name="UploadResumeScreen"
-            component={UploadResumeScreen}
-          />
+          <Stack.Screen name="Home" component={Home} />
+          // <Stack.Screen
+          //   name="UploadResumeScreen"
+          //   component={UploadResumeScreen}
+          // />
         )}
       </Stack.Navigator>
     </NavigationContainer>
@@ -51,24 +49,3 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
-// import { Text, View } from "react-native";
-// import { CardsContainer } from "./screens/CardsContainer";
-// import { GestureHandlerRootView } from "react-native-gesture-handler";
-
-// export default function Index() {
-//   return (
-//     <GestureHandlerRootView>
-//       <View
-//         style={{
-//           flex: 1,
-//           justifyContent: "center",
-//           alignItems: "center",
-//         }}
-//       >
-//         <CardsContainer />
-//         {/* <Text>Edit app/index.tsx to edit this screen.</Text> */}
-//       </View>
-//     </GestureHandlerRootView>
-//   );
-// }

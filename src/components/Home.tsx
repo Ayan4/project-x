@@ -14,31 +14,17 @@ import {
   getTempAudioPath,
 } from "../VoiceService";
 import { Audio } from "expo-av";
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
-  FadeOut,
-  FadeOutDown,
-} from "react-native-reanimated";
 import LottieOrb from "./LottieOrb";
 import LottieView from "lottie-react-native";
 import { ConversationDataContext } from "@/conversationData.context";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  BLUE_10,
-  PRIMARY_COLOR,
-  SECONDARY_COLOR,
-  THIRD_COLOR,
-} from "../Constants";
-import { FontAwesome } from "@expo/vector-icons";
+import { BLUE_10, ECRU, PRIMARY_COLOR } from "../Constants";
+import { AntDesign } from "@expo/vector-icons";
 
 export default function Home() {
   const { conversationData, setConversationData } = useContext(
     ConversationDataContext
   );
-  const [speechText, setSpeechText] = useState("");
-  const [loading, setLoading] = useState(false);
   const [playBackOn, setPlayBackOn] = useState(false);
   const [sound, setSound] = useState<any>(null);
   const animationRef = useRef<LottieView>(null);
@@ -46,13 +32,6 @@ export default function Home() {
   useEffect(() => {
     setPlayBackOn(true);
     handleSpeechEnd("Hello", conversationData?.conversation_id);
-
-    // Cleanup function to unload sound when component unmounts
-    // return () => {
-    //   if (sound) {
-    //     sound.unloadAsync();
-    //   }
-    // };
   }, [conversationData]);
 
   const loadAudio = async (base64AudioData: any) => {
@@ -88,7 +67,6 @@ export default function Home() {
         if (status.isPlaying) {
           await resAudio.pauseAsync();
         } else {
-          setLoading(false);
           setPlayBackOn(true);
           await resAudio.playAsync();
         }
@@ -107,7 +85,6 @@ export default function Home() {
         await loadAudio(audipFilePath);
       };
     } catch (err) {
-      setLoading(false);
       console.error("conversation data processing error ", err);
     }
   };
@@ -117,14 +94,12 @@ export default function Home() {
     conversationId: string
   ) => {
     try {
-      setLoading(true);
       const responseData = await fetchConversationAudio({
         humanPrompt,
         conversationId,
       });
       await processResponseData(responseData);
     } catch (err) {
-      setLoading(false);
       console.error("Error playing audio:", err);
     }
   };
@@ -136,30 +111,31 @@ export default function Home() {
           style={styles.label}
           onPress={async () => {
             await sound.pauseAsync();
-            setSpeechText("");
             setConversationData({});
             clearConversationId({
               conversationId: conversationData?.conversation_id,
             });
           }}
         >
-          {/* <View style={styles.label}> */}
-          <FontAwesome name="plus" size={24} color={BLUE_10} />
-          {/* </View> */}
+          <AntDesign name="plus" size={24} color={BLUE_10} />
         </Pressable>
       </View>
       <View style={styles.voiceContainer}>
+        <View>
+          <Text style={styles.greetingText}>
+            {conversationData?.candidate_name
+              ? `👋 Hi ${conversationData?.candidate_name}!`
+              : "👋 Hi There!"}
+          </Text>
+        </View>
         {playBackOn ? (
           <LottieOrb animationRef={animationRef} />
         ) : (
           <Record
             onSpeechEnd={(value) => {
               handleSpeechEnd(value[0], conversationData?.conversation_id);
-              setSpeechText(value[0]);
             }}
-            onSpeechStart={() => {
-              setSpeechText("");
-            }}
+            onSpeechStart={() => {}}
           />
         )}
       </View>
@@ -198,10 +174,15 @@ const styles = StyleSheet.create({
   voiceContainer: {
     flex: 1,
     width: "100%",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
     borderTopWidth: 1,
     borderTopColor: "#0b3131",
     paddingBottom: 100,
+    paddingTop: 80,
+  },
+  greetingText: {
+    fontSize: 30,
+    color: ECRU,
   },
 });
